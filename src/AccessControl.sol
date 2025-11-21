@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.13;
 
-contract AccessControl {
-    enum Role { None, Patient, Doctor }
+import "src/interface/IAccessControl.sol";
+
+contract AccessControl is IAccessControl {
     mapping(address => Role) public roles;
+    mapping(address => bool) public isRegistered;
 
-    event RoleRegistered(address indexed user, Role role);
+    function registerRole(address user, Role role) external {
+        require(!isRegistered[user], "Already registered");
+        require(role != Role.None, "Invalid role");
 
-    function register(Role role) external {
-        require(roles[msg.sender] == Role.None, "Already registered");
-        roles[msg.sender] = role;
-        emit RoleRegistered(msg.sender, role);
+        roles[user] = role;
+        isRegistered[user] = true;
+
+        emit RoleRegistered(user, role);
     }
 
     function isPatient(address user) external view returns (bool) {
