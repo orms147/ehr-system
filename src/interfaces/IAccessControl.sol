@@ -6,6 +6,7 @@ interface IAccessControl {
 
     event RoleRegistered(address indexed user, Role indexed role);
 
+    function registerRole(address user, Role role) external;
     function isPatient(address user) external view returns (bool);
     function isDoctor(address user) external view returns (bool);
     function isOrganization(address user) external view returns (bool);

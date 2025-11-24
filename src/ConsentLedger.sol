@@ -97,6 +97,7 @@ contract ConsentLedger is IConsentLedger, ReentrancyGuard {
 
     function grantBySig(ConsentPermit calldata permit, bytes calldata signature) external nonReentrant {
         require(permit.nonce == nonces[permit.patient], "Invalid nonce");
+        require(permit.issuedAt <= block.timestamp, "Future permit");
 
         bytes32 structHash = keccak256(abi.encode(
             PERMIT_TYPEHASH,
@@ -142,9 +143,11 @@ contract ConsentLedger is IConsentLedger, ReentrancyGuard {
 
     function canAccess(address grantee, string memory cid) external view override returns (bool) {
         Consent memory c = consents[grantee][cid];
-        if (!c.active) return false;
-        if (c.expireAt != type(uint256).max && block.timestamp > c.expireAt) return false;
-        return true;
+        if (c.active && (c.expireAt == type(uint256).max || block.timestamp <= c.expireAt)) {
+            return true;
+        }
+        // Future improvement: check includeUpdates chain
+        return false;
     }
 
     function getConsent(address grantee, string memory rootCID) external view override returns (Consent memory) {
