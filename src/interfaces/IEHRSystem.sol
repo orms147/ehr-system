@@ -1,18 +1,44 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-import "./IAccessControl.sol";
-import "./IRecordRegistry.sol";
-import "./IConsentLedger.sol";
+pragma solidity ^0.8.24;
 
 interface IEHRSystem {
-    event SystemInitialized(address indexed accessControl, address indexed recordRegistry, address indexed consentLedger);
+    enum RequestType { DirectAccess, FullDelegation }
+    enum RequestStatus { Pending, RequesterApproved, CounterpartApproved, Completed, Rejected }
 
-    function accessControl() external view returns (IAccessControl);
-    function recordRegistry() external view returns (IRecordRegistry);
-    function consentLedger() external view returns (IConsentLedger);
+    struct AccessRequest {
+        address requester;
+        address counterpart;
+        string rootCID;
+        RequestType reqType;
+        uint40 expiry;
+        RequestStatus status;
+        bytes32 encKeyHash;
+        uint40 consentDuration;  // lưu theo giây
+    }
 
-    function addRecord(string memory cid, string memory parentCID, string memory recordType) external;
-    function grantConsent(address grantee, string memory rootCID, bytes32 encKeyHash, uint256 expireAt, bool includeUpdates, bool allowDelegate) external;
-    function revokeConsent(string memory rootCID, address grantee) external;
+    event AccessRequested(bytes32 indexed reqId, address indexed requester, address indexed counterpart, string rootCID, RequestType reqType);
+    event AccessRequestUpdated(bytes32 indexed reqId, RequestStatus status);
+
+    error InvalidRequest();
+    error RequestExpired();
+    error NotParty();
+    error AlreadyProcessed();
+
+    function requestAccess(
+        address counterpart,
+        string calldata rootCID,
+        RequestType reqType,
+        bytes32 encKeyHash,
+        uint40 consentDurationHours,
+        uint40 validForHours
+    ) external;
+
+    function confirmAccessRequest(bytes32 reqId) external;
+    function rejectAccessRequest(bytes32 reqId) external;
+
+    function addRecord(string calldata cid, string calldata parentCID, string calldata recordType) external;
+    function delegateAuthorityBySig(address delegatee, uint40 duration, bool allowSubDelegate, uint256 deadline, bytes calldata signature) external;
+    function revokeDelegation(address delegatee) external;
+
+    function accessRequests(bytes32 reqId) external view returns (AccessRequest memory);
 }
