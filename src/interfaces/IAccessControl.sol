@@ -5,21 +5,21 @@ interface IAccessControl {
     struct Verification {
         address verifier;
         string credential;      
-        uint40 verifiedAt;      //unit32 = 4,29 bil secs = 136 years
+        uint40 verifiedAt;      // unit32 = 4,29 bil secs = 136 years
         bool active;
     }       
 
-    //Event
+    // Event
     event UserRegistered(address indexed user, string roleType);
     event DoctorVerified(address indexed doctor, address indexed verifier, string credential);
     event OrganizationVerified(address indexed org, string name);
     event VerificationRevoked(address indexed user, address indexed revoker);
 
-    //Error
+    // Error
     error AlreadyRegistered();
     error NotAuthorized();
     error InvalidAddress();
-    error NotVerifiedOrg();     //only verified org may verify doctors
+    error NotVerifiedOrg();     // only verified org may verify doctors
 
     // Registration
     function registerAsPatient() external;
