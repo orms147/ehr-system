@@ -13,6 +13,8 @@ interface IAccessControl {
     event UserRegistered(address indexed user, string roleType);
     event DoctorVerified(address indexed doctor, address indexed verifier, string credential);
     event OrganizationVerified(address indexed org, string name);
+    event MemberAdded(address indexed org, address indexed doctor);
+    event MemberRemoved(address indexed org, address indexed doctor);
     event VerificationRevoked(address indexed user, address indexed revoker);
 
     // Error
@@ -34,6 +36,10 @@ interface IAccessControl {
     // Revocation
     function revokeDoctorVerification(address doctor) external;
     function revokeOrgVerification(address org) external;
+    
+    // Member management
+    function addMember(address org, address doctor) external;
+    function removeMember(address org, address doctor) external;
 
     // View functions
     function isPatient(address user) external view returns (bool);
@@ -68,6 +74,6 @@ interface IAccessControl {
         bool isMinistry_
     );
 
-    function MINISTRY_OF_HEALTH() external view returns (address);
+    function MINISTRY_OF_HEALTH() external view returns (address);  // As declare a variable
 
 }
