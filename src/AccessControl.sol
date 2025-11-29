@@ -105,6 +105,16 @@ contract AccessControl is IAccessControl{
 
     // VERIFIED ORG can verify doctor
     function verifyDoctor(address doctor, string calldata credential) external override onlyVerifiedOrg {
+        _verifyDoctor(doctor, credential);
+    }
+
+    // VERIFIED by MINISTRY (implements interface)
+    function verifyDoctorByMinistry(address doctor, string calldata credential) external override onlyMinistry {
+        _verifyDoctor(doctor, credential);
+    }
+
+    // VERIFIED ORG can verify doctor
+    function _verifyDoctor(address doctor, string memory credential) internal {
         if ((_roles[doctor] & DOCTOR) == 0) revert NotAuthorized();
         
         // Add verified flag
@@ -124,7 +134,7 @@ contract AccessControl is IAccessControl{
     
     // ================ ORGANIZATION MEMBERSHIP ================
 
-    function addMember(address org, address doctor) external {
+    function addMember(address org, address doctor) external override{
         if ((_roles[msg.sender] & VERIFIED_ORG) == 0) revert NotAuthorized();
         if (msg.sender != org) revert NotAuthorized();
 
@@ -141,7 +151,7 @@ contract AccessControl is IAccessControl{
         emit MemberAdded(org, doctor);
     }
 
-    function removeMember(address org, address doctor) external {
+    function removeMember(address org, address doctor) external override{
         if ((_roles[msg.sender] & VERIFIED_ORG) == 0) revert NotAuthorized();
         if (msg.sender != org) revert NotAuthorized();
 
