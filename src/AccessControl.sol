@@ -48,7 +48,14 @@ contract AccessControl is IAccessControl{
         if (ministryAddress == address(0)) revert InvalidAddress();
 
         MINISTRY_OF_HEALTH = ministryAddress;
-        _roles[ministryAddress] = MINISTRY | VERIFIED_ORG;
+        _roles[ministryAddress] = MINISTRY | ORGANIZATION | VERIFIED_ORG;
+
+        orgVerifications[ministryAddress] = Verification({
+             verifier: ministryAddress,
+             credential: "Ministry of Health",
+             verifiedAt: uint40(block.timestamp),
+             active: true
+           });
 
         emit UserRegistered(ministryAddress, "Ministry of Health");
     }
@@ -179,7 +186,8 @@ contract AccessControl is IAccessControl{
 
     function revokeDoctorVerification(address doctor) external override {
         Verification storage verif = doctorVerifications[doctor];
-        
+        if (!verif.active) revert NotAuthorized();  //don't need to revoke
+
         // Omly verifier or Ministry can revoke 
         if (msg.sender != verif.verifier && msg.sender != MINISTRY_OF_HEALTH) {
             revert NotAuthorized();
